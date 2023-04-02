@@ -1,0 +1,9 @@
+api:
+  - url: 'https://ghibliapi.herokuapp.com'
+    name: 'Films'
+    path:  
+    - '/films'
+  - url: 'https://world.openpetfoodfacts.org/api/v0/product'
+    name: 'Pet Food Facts'
+    path:
+      - "/20106836.json"
