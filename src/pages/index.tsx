@@ -1,21 +1,17 @@
-import Head from "next/head";
-import Image from "next/image";
-import { QueryClient, dehydrate, useQueries } from "@tanstack/react-query";
-import { Inter } from "next/font/google";
-
-import { Logo } from "@/components/Logo";
-import { z } from "zod";
+import { QueryClient, dehydrate } from "@tanstack/react-query";
 
 import endpointConfig from "@/config/endpoints.yaml";
-import { endpointConfigSchema } from "@/config/endpointSchema";
-import { useEffect, useState } from "react";
+
+import { ApiConfig, endpointConfigSchema } from "@/config/endpointSchema";
 import { useQuery } from "@tanstack/react-query";
 
 const endpoints = endpointConfigSchema.parse(endpointConfig);
 
-type ApiConfig = z.infer<typeof endpointConfigSchema>;
-
-async function checkEndpoint({ url, path, name }: ApiConfig["api"][0]) {
+async function checkEndpoint({
+  url,
+  path,
+  name,
+}: ApiConfig): Promise<ApiStatusConfig> {
   try {
     const apiUrl = `${url}${path}`;
     const res = await fetch(apiUrl);
@@ -30,18 +26,9 @@ type ApiStatus = "loading" | "ok" | "error";
 
 type ApiStatusConfig = { name: string; status: ApiStatus };
 
-function initialState(): ApiStatus[] {
-  return endpoints.api.map(({ url, path, name }) => ({
-    name,
-    status: "loading",
-  }));
-}
-
-type PromiseStatus<T> =
-  | { status: "fulfilled"; value: T }
-  | { status: "rejected"; reason: string };
-
-function updateStatus(checkStatusResponse: PromiseStatus<ApiStatusConfig>[]) {
+function updateStatus(
+  checkStatusResponse: PromiseSettledResult<ApiStatusConfig>[]
+) {
   return checkStatusResponse.map((statusResponse) => {
     return statusResponse.status === "fulfilled"
       ? statusResponse.value
@@ -50,32 +37,38 @@ function updateStatus(checkStatusResponse: PromiseStatus<ApiStatusConfig>[]) {
 }
 
 export default function Home() {
-  const {
-    data: currentApiStatus,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: currentApiStatus, status } = useQuery({
     queryKey: ["currentApiStatus"],
     queryFn: () => checkAllApiStatus(),
   });
-  if (isLoading) return <h1>Loading...</h1>;
-  const updatedStatus = updateStatus(currentApiStatus)
-  return (
-    <>
-      <header className="w-full">
-        <h1 className="text-3xl mx-auto w-1/2">Logo</h1>
-      </header>
-      <main>
-        <ol className="p-4">
-          {updatedStatus.map((apiStatus) => (
-            <li key={apiStatus.name}>
-              {apiStatus.name} : {apiStatus.status}
-            </li>
-          ))}
-        </ol>
-      </main>
-    </>
-  );
+
+  switch (status) {
+    case "loading":
+      return <h1>Loading...</h1>;
+    case "success":
+      const updatedStatus = updateStatus(currentApiStatus);
+      return (
+        <>
+          <header className="w-full">
+            <h1 className="text-3xl mx-auto w-1/2">Logo</h1>
+          </header>
+          <main>
+            <ol className="p-4">
+              {updatedStatus.map((apiStatus) => (
+                <li key={apiStatus.name}>
+                  {apiStatus.name} : {apiStatus.status}
+                </li>
+              ))}
+            </ol>
+          </main>
+        </>
+      );
+    case "error":
+      return <h1>Error loading..</h1>;
+    default:
+      const _unknown: never = status;
+      return _unknown;
+  }
 }
 
 async function checkAllApiStatus() {
