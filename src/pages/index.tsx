@@ -1,30 +1,8 @@
-import { QueryClient, dehydrate } from "@tanstack/react-query";
+import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
-import endpointConfig from "@/config/endpoints.yaml";
 
-import { ApiConfig, endpointConfigSchema } from "@/config/endpointSchema";
-import { useQuery } from "@tanstack/react-query";
+import { ApiStatusConfig, checkAllApiStatus, checkEndpoint } from "@/services/check-status";
 
-const endpoints = endpointConfigSchema.parse(endpointConfig);
-
-async function checkEndpoint({
-  url,
-  path,
-  name,
-}: ApiConfig): Promise<ApiStatusConfig> {
-  try {
-    const apiUrl = `${url}${path}`;
-    const res = await fetch(apiUrl);
-    return res.ok ? { name, status: "ok" } : { name, status: "error" };
-  } catch (e) {
-    console.error(e);
-    return { name, status: "error" };
-  }
-}
-
-type ApiStatus = "loading" | "ok" | "error";
-
-type ApiStatusConfig = { name: string; status: ApiStatus };
 
 function updateStatus(
   checkStatusResponse: PromiseSettledResult<ApiStatusConfig>[]
@@ -71,11 +49,6 @@ export default function Home() {
   }
 }
 
-async function checkAllApiStatus() {
-  return Promise.allSettled(
-    endpoints.api.map((apiConfig) => checkEndpoint(apiConfig))
-  );
-}
 
 export async function getServerSideProps() {
   const queryClient = new QueryClient();
