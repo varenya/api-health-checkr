@@ -1,6 +1,5 @@
 import { QueryClient, dehydrate, useQuery } from "@tanstack/react-query";
 
-
 import { ApiStatusConfig, checkAllApiStatus, checkEndpoint } from "@/services/check-status";
 
 
