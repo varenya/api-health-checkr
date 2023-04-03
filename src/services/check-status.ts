@@ -6,19 +6,14 @@ type ApiStatusConfig = { name: string; status: ApiStatus };
 
 const endpoints = endpointConfigSchema.parse(endpointConfig);
 
-async function checkEndpoint({
-  url,
-  path,
-  name,
-}: ApiConfig): Promise<ApiStatusConfig> {
-  try {
-    const apiUrl = `${url}${path}`;
-    const res = await fetch(apiUrl);
-    return res.ok ? { name, status: "ok" } : { name, status: "error" };
-  } catch (e) {
-    console.error(e);
-    return { name, status: "error" };
+async function checkEndpoint({ url, path, name }: ApiConfig) {
+  const apiUrl = `${url}${path}`;
+  const res = await fetch(apiUrl);
+  if (!res.ok) {
+    throw new Error("Network Failue");
   }
+  const apiResponse = await res.json()
+  return apiResponse
 }
 
 async function checkAllApiStatus() {
