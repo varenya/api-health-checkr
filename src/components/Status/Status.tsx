@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 
 function StatusList() {
   return (
-    <div className="overflow-hidden bg-white shadow sm:rounded-md">
+    <div className="overflow-hidden bg-white shadow sm:rounded-md lg:w-1/2 mx-auto">
       <ul role="list" className="divide-y divide-gray-200">
         {apiConfig.map((apiConfig) => (
           <Status key={apiConfig.name} {...apiConfig} />
