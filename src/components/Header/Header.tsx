@@ -9,7 +9,7 @@ function Header() {
             Check API status
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-300">
-            One stop place to see all your API's status.
+            One stop place to see all your API&apos;s status.
           </p>
         </div>
       </div>
